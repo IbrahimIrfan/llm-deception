@@ -1,0 +1,40 @@
+{
+  "models": [
+    {
+      "id": "gemini_3_pro",
+      "model": "google/gemini-3-pro-preview"
+    },
+    {
+      "id": "claude_opus_4_5",
+      "model": "anthropic/claude-opus-4.5"
+    },
+    {
+      "id": "gpt_5_2",
+      "model": "openai/gpt-5.2"
+    },
+    {
+      "id": "glm_4_7",
+      "model": "z-ai/glm-4.7"
+    },
+    {
+      "id": "minimax_2_1",
+      "model": "minimax/minimax-m2.1"
+    },
+    {
+      "id": "grok_4",
+      "model": "x-ai/grok-4"
+    },
+    {
+      "id": "deepseek_v3_2_thinking",
+      "model": "deepseek/deepseek-v3.2"
+    },
+    {
+      "id": "sonnet_4_5",
+      "model": "anthropic/claude-sonnet-4.5"
+    },
+    {
+      "id": "gpt_oss_20b",
+      "model": "openai/gpt-oss-20b"
+    }
+  ]
+}

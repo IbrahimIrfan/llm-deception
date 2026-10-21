@@ -1,0 +1,17 @@
+{
+  "name": "Marcus Smith",
+  "career": "Regional sales manager for a commercial HVAC company",
+  "personality_traits": [
+    "competitive",
+    "talkative",
+    "impatient",
+    "generous with friends"
+  ],
+  "interests": ["fantasy football", "grilling", "true crime podcasts", "golf"],
+  "family": "Married to his college girlfriend Diana for 11 years, two daughters ages 7 and 4, lives in a suburb of Columbus, Ohio",
+  "fun_facts": [
+    "Once met Guy Fieri at a gas station in Nevada and still talks about it",
+    "Has never finished a book but owns over 30 that he intends to read",
+    "Broke his collarbone trying to dunk at a company picnic basketball game at age 34"
+  ]
+}

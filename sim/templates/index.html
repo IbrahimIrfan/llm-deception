@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LLM Social Deduction Simulator</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="title">LLM Social Deduction</div>
+        <div class="subtitle">Host Console</div>
+      </div>
+      <div class="channel-list" id="channelList"></div>
+    </aside>
+
+    <main class="main">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <button id="initBtn">Init Game</button>
+          <button id="regenBtn">Regen Bios</button>
+          <button id="runRoundBtn">Run Discussion</button>
+          <button id="startVoteBtn">Start Vote</button>
+          <button id="autoBtn">Auto</button>
+        </div>
+        <div class="toolbar-right">
+          <div class="round-indicator" id="roundIndicator"></div>
+        </div>
+      </div>
+
+      <div class="round-tabs" id="roundTabs"></div>
+
+      <div class="feed" id="feed"></div>
+    </main>
+
+    <aside class="panel">
+      <section class="panel-section">
+        <h3>Game State</h3>
+        <div class="state-row">
+          <span>Round</span>
+          <strong id="stateRound">-</strong>
+        </div>
+        <div class="state-row">
+          <span>Alive</span>
+          <div id="stateAlive" class="state-list"></div>
+        </div>
+        <div class="state-row">
+          <span>Eliminated</span>
+          <div id="stateEliminated" class="state-list"></div>
+        </div>
+        <div class="state-row">
+          <span>Winner</span>
+          <div id="stateWinner" class="state-highlight">-</div>
+        </div>
+        <div class="state-row">
+          <label class="toggle">
+            <input type="checkbox" id="moneyToggle" />
+            <span>Show money holder</span>
+          </label>
+          <div id="stateMoney" class="state-highlight">Hidden</div>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <h3>Player Notes</h3>
+        <div id="playerNotes" class="notes"></div>
+      </section>
+
+      <section class="panel-section">
+        <h3>Player Bios</h3>
+        <div id="playerBios" class="notes"></div>
+      </section>
+
+      <section class="panel-section">
+        <h3>Raw Outputs (latest day)</h3>
+        <div id="rawOutputs" class="raw"></div>
+      </section>
+    </aside>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

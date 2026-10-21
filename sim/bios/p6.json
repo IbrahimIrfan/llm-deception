@@ -1,0 +1,20 @@
+{
+  "name": "Emily Carter",
+  "career": "High School Teacher",
+  "personality_traits": [
+    "Empathetic",
+    "Organized",
+    "Humorous"
+  ],
+  "interests": [
+    "Gardening",
+    "Cooking",
+    "Traveling"
+  ],
+  "family": "Married to husband Mark, with one daughter named Lily",
+  "fun_facts": [
+    "Once won a local baking contest",
+    "Speaks three languages fluently",
+    "Collects vintage postcards from around the world"
+  ]
+}

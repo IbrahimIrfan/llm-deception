@@ -1,0 +1,17 @@
+{
+  "name": "Elena Vance",
+  "career": "Museum Archivist",
+  "personality_traits": [
+    "Observant",
+    "Detail-oriented",
+    "Reserved",
+    "Skeptical"
+  ],
+  "interests": ["Antique restoration", "Amateur genealogy", "Baking bread"],
+  "family": "Married to a culinary instructor; mother of one college-aged son, Leo.",
+  "fun_facts": [
+    "Can identify the era of a piece of pottery just by the weight.",
+    "Once won a regional chili cook-off despite being a vegetarian.",
+    "Has a pet tortoise named 'Flash' that she's had for 20 years."
+  ]
+}

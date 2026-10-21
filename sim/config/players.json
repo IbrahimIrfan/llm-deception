@@ -1,0 +1,13 @@
+{
+  "players": [
+    {"id": "p1", "model_id": "gemini_3_pro", "persona": "Observant and calm; values trust over confrontation."},
+    {"id": "p2", "model_id": "claude_opus_4_5", "persona": "Warm but strategic; prefers quiet influence."},
+    {"id": "p3", "model_id": "gpt_5_2", "persona": "Analytical and bold; enjoys debate."},
+    {"id": "p4", "model_id": "glm_4_7", "persona": "Playful and persuasive; reads social cues."},
+    {"id": "p5", "model_id": "minimax_2_1", "persona": "Cautious and methodical; avoids rash claims."},
+    {"id": "p6", "model_id": "grok_4", "persona": "Witty and probing; tests others with humor."},
+    {"id": "p7", "model_id": "deepseek_v3_2_thinking", "persona": "Introspective and patient; gathers evidence."},
+    {"id": "p8", "model_id": "sonnet_4_5", "persona": "Direct and skeptical; calls out inconsistencies."},
+    {"id": "p9", "model_id": "gpt_oss_20b", "persona": "Empathetic and diplomatic; seeks consensus."}
+  ]
+}

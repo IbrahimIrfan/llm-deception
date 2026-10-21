@@ -1,0 +1,24 @@
+{
+  "name": "Sarah Chen",
+  "career": "Marine Biologist",
+  "personality_traits": [
+    "Curious",
+    "Analytical",
+    "Patient",
+    "Introverted",
+    "Methodical"
+  ],
+  "interests": [
+    "Scuba diving",
+    "Photography",
+    "Sustainable cooking",
+    "Classical piano",
+    "Bird watching"
+  ],
+  "family": "Youngest of three siblings; parents live in Vancouver",
+  "fun_facts": [
+    "Has cataloged over 200 species of nudibranchs",
+    "Can hold her breath for 4 minutes",
+    "Once discovered a new species of sea slug during her PhD research"
+  ]
+}

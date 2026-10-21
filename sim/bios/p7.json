@@ -1,0 +1,23 @@
+{
+  "name": "Dr. Elias Gordon",
+  "career": "Botanist & University Professor",
+  "personality_traits": [
+    "Observant",
+    "Methodical",
+    "Reserved",
+    "Patient",
+    "Slightly Cynical"
+  ],
+  "interests": [
+    "Mycology",
+    "Victorian Literature",
+    "Classical Piano",
+    "Hiking"
+  ],
+  "family": "Widower; has one adult daughter who lives abroad.",
+  "fun_facts": [
+    "Can identify over 200 species of fungi by sight alone.",
+    "Once gave a lecture series while suffering from a severe case of poison ivy.",
+    "Keeps a pressed, poisonous nightshade flower in his wallet as a 'memento mori'."
+  ]
+}

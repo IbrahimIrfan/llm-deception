@@ -7,7 +7,7 @@ from typing import Any, Dict
 from state import GameState
 
 
-STATE_PATH = os.path.join(os.path.dirname(__file__), "logs", "state.json")
+DEFAULT_STATE_PATH = os.path.join(os.path.dirname(__file__), "logs", "state.json")
 BIOS_DIR = os.path.join(os.path.dirname(__file__), "bios")
 
 
@@ -24,15 +24,20 @@ def save_json(path: str, data: Dict[str, Any]) -> None:
         json.dump(data, f, indent=2)
 
 
+def state_path() -> str:
+    """Where the current game lives. SIM_STATE_PATH lets experiments and the viewer point at any saved game."""
+    return os.getenv("SIM_STATE_PATH") or DEFAULT_STATE_PATH
+
+
 def load_state() -> GameState:
-    data = load_json(STATE_PATH)
+    data = load_json(state_path())
     if not data:
         return GameState()
     return GameState.from_dict(data)
 
 
 def save_state(state: GameState) -> None:
-    save_json(STATE_PATH, state.to_dict())
+    save_json(state_path(), state.to_dict())
 
 
 def load_bios() -> Dict[str, Any]:

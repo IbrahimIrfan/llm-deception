@@ -1,6 +1,9 @@
+// Deep links: /?player=p3 opens that player's private channel, /?reveal=1 shows the money holder.
+const params = new URLSearchParams(window.location.search);
+
 const state = {
   data: null,
-  channel: { type: "public" },
+  channel: params.get("player") ? { type: "dm", playerId: params.get("player") } : { type: "public" },
   auto: false,
   autoPoll: null,
   roundFilter: "all",
@@ -458,6 +461,7 @@ function bindActions() {
     }
   });
 
+  if (params.get("reveal")) document.getElementById("moneyToggle").checked = true;
   document.getElementById("moneyToggle").addEventListener("change", () => {
     renderState(state.data);
   });

@@ -46,6 +46,7 @@ class GameState:
     private_notes: Dict[str, str] = field(default_factory=dict)
     days: List[DayState] = field(default_factory=list)
     players: Dict[str, Player] = field(default_factory=dict)
+    meta: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         def _bio_to_dict(bio: Optional[Bio]) -> Optional[Dict[str, Any]]:
@@ -73,6 +74,7 @@ class GameState:
             "private_notes": dict(self.private_notes),
             "days": [asdict(day) for day in self.days],
             "players": {pid: _player_to_dict(p) for pid, p in self.players.items()},
+            "meta": dict(self.meta),
         }
 
     @staticmethod
@@ -88,6 +90,7 @@ class GameState:
         state.last_round_summary = data.get("last_round_summary", "")
         state.public_log = data.get("public_log", [])
         state.private_notes = data.get("private_notes", {})
+        state.meta = data.get("meta", {})
 
         players_data = data.get("players", {})
         for pid, pdata in players_data.items():

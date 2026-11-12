@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Dict, List
 
 from state import Player, GameState
@@ -29,7 +30,7 @@ Rules:
 - Public conversation resets each round; remember details in your notes.
 - If the money holder is eliminated, the money is reassigned randomly among the living players.
 - When only two players remain, the money holder wins.
-You may send multiple messages in a round (up to 10). When you are finished for the round, set "done": true.
+You may send multiple messages in a round (up to {max_messages}). When you are finished for the round, set "done": true.
 """
 
 OUTPUT_FORMAT = """Required output format (strict JSON):
@@ -106,7 +107,7 @@ def build_messages(
     public_messages: List[Dict[str, str]],
     inbox: List[Dict[str, str]],
 ) -> List[Dict[str, str]]:
-    system = SYSTEM_TEMPLATE.format(player_name=player.display_name or player.id)
+    system = SYSTEM_TEMPLATE.format(player_name=player.display_name or player.id, max_messages=os.getenv("SIM_MAX_MESSAGES", "10"))
     private_context = build_private_context(state, player, inbox)
     public_context = build_public_context(public_messages)
 
@@ -136,7 +137,7 @@ def build_revote_messages(
     public_messages: List[Dict[str, str]],
     tied_candidates: List[str],
 ) -> List[Dict[str, str]]:
-    system = SYSTEM_TEMPLATE.format(player_name=player.display_name or player.id)
+    system = SYSTEM_TEMPLATE.format(player_name=player.display_name or player.id, max_messages=os.getenv("SIM_MAX_MESSAGES", "10"))
     public_context = build_public_context(public_messages)
     candidates = ", ".join(tied_candidates)
     user = (
@@ -165,7 +166,7 @@ def build_vote_messages(
     all_public_messages: List[Dict[str, str]],
     inbox_all: List[Dict[str, str]],
 ) -> List[Dict[str, str]]:
-    system = SYSTEM_TEMPLATE.format(player_name=player.display_name or player.id)
+    system = SYSTEM_TEMPLATE.format(player_name=player.display_name or player.id, max_messages=os.getenv("SIM_MAX_MESSAGES", "10"))
     eliminated_names = [state.players[p].display_name for p in state.eliminated_players]
     eliminated_text = ", ".join(eliminated_names) if eliminated_names else "None"
     alive_names = [state.players[p].display_name for p in state.alive_players]

@@ -4,6 +4,7 @@ import json
 import os
 import random
 import re
+from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Any, List, Optional
 
 from agents import LLMClient, load_model_configs, now_iso
@@ -17,29 +18,44 @@ MODELS_PATH = os.path.join(CONFIG_DIR, "models.json")
 PLAYERS_PATH = os.path.join(CONFIG_DIR, "players.json")
 
 
+def max_messages() -> int:
+    """How many times one player may speak in a single discussion round."""
+    return int(os.getenv("SIM_MAX_MESSAGES", "10"))
+
+
 def load_players_config() -> List[Dict[str, Any]]:
     with open(PLAYERS_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
     return data.get("players", [])
 
 
-def build_players() -> Dict[str, Player]:
+def build_players(assignment: Optional[Dict[str, str]] = None) -> Dict[str, Player]:
+    """Seats come from players.json. `assignment` (seat id -> model id) overrides which model plays each seat."""
     players_config = load_players_config()
     players: Dict[str, Player] = {}
     for item in players_config:
         pid = item["id"]
         players[pid] = Player(
             id=pid,
-            model_id=item["model_id"],
+            model_id=(assignment or {}).get(pid, item["model_id"]),
             persona=item.get("persona", ""),
         )
     return players
 
 
+def chat_all(requests: Dict[str, Any]) -> Dict[str, str]:
+    """Send several players' prompts at the same time. `requests` maps player id -> (model config, messages)."""
+    if not requests:
+        return {}
+    with ThreadPoolExecutor(max_workers=len(requests)) as pool:
+        futures = {pid: pool.submit(LLMClient(cfg).chat, messages) for pid, (cfg, messages) in requests.items()}
+        return {pid: future.result() for pid, future in futures.items()}
+
+
 def parse_json_block(text: str) -> Optional[Dict[str, Any]]:
     text = text.strip()
     if text.startswith("```"):
-        text = re.sub(r"^```(?:json)?\\s*|\\s*```$", "", text, flags=re.IGNORECASE | re.DOTALL)
+        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.IGNORECASE)
 
     try:
         return json.loads(text)
@@ -84,9 +100,14 @@ def resolve_player_id(state: GameState, value: str) -> Optional[str]:
     return None
 
 
-def init_game(force_regen_bios: bool = False) -> GameState:
+def init_game(
+    force_regen_bios: bool = False,
+    assignment: Optional[Dict[str, str]] = None,
+    money_holder: Optional[str] = None,
+    meta: Optional[Dict[str, Any]] = None,
+) -> GameState:
     state = GameState()
-    state.players = build_players()
+    state.players = build_players(assignment)
     state.alive_players = list(state.players.keys())
     state.eliminated_players = []
     state.round_number = 1
@@ -142,8 +163,11 @@ def init_game(force_regen_bios: bool = False) -> GameState:
 
     print(f"[init] bios_cached={len(bios_data)} dir=sim/bios")
 
-    state.money_holder = random.choice(state.alive_players)
+    state.money_holder = money_holder if money_holder in state.alive_players else random.choice(state.alive_players)
     print(f"[init] money_holder={state.money_holder}")
+    state.meta = dict(meta or {})
+    state.meta["started_at"] = now_iso()
+    state.meta["models"] = {mid: cfg.model for mid, cfg in models.items()}
     state.private_notes = {pid: "" for pid in state.alive_players}
 
     day = DayState(day_number=state.round_number)
@@ -191,29 +215,36 @@ def run_round() -> GameState:
     }
 
     while True:
-        progressed = False
+        # One wave: every player who still wants to speak answers the same snapshot of the
+        # conversation at the same time, like people typing at once in a group chat.
+        active = []
         for pid in day.order:
-            if pid not in state.alive_players:
+            if pid not in state.alive_players or counts[pid] >= max_messages():
                 continue
-            if counts[pid] >= 10:
-                continue
-            inbox = day.dm_inbox.get(pid, [])
-            has_new_dm = len(inbox) > inbox_seen[pid]
+            has_new_dm = len(day.dm_inbox.get(pid, [])) > inbox_seen[pid]
             if done[pid] and not has_new_dm:
                 continue
+            active.append(pid)
+        if not active:
+            break
 
-            player = state.players[pid]
-            model_cfg = models[player.model_id]
-            client = LLMClient(model_cfg)
-            print(f"[round] turn pid={pid} model={model_cfg.model} count={counts[pid] + 1}")
-
-            messages = build_messages(
+        prompts = {
+            pid: build_messages(
                 state=state,
-                player=player,
+                player=state.players[pid],
                 public_messages=day.public_messages,
-                inbox=inbox,
+                inbox=day.dm_inbox.get(pid, []),
             )
-            raw = client.chat(messages)
+            for pid in active
+        }
+        seen_now = {pid: len(day.dm_inbox.get(pid, [])) for pid in active}
+        print(f"[round] wave players={active}")
+        raws = chat_all({pid: (models[state.players[pid].model_id], prompts[pid]) for pid in active})
+
+        for pid in active:
+            player = state.players[pid]
+            raw = raws[pid]
+            inbox_seen[pid] = seen_now[pid]
             counts[pid] += 1
             print(f"[round] raw_response pid={pid} chars={len(raw)}")
 
@@ -243,8 +274,6 @@ def run_round() -> GameState:
                         "day": day.day_number,
                     },
                 )
-                progressed = True
-                inbox_seen[pid] = len(day.dm_inbox.get(pid, []))
                 continue
 
             public_message = (parsed.get("public_message") or "").strip()
@@ -307,13 +336,7 @@ def run_round() -> GameState:
                 done[pid] = True
                 print(f"[round] done pid={pid}")
 
-            inbox_seen[pid] = len(day.dm_inbox.get(pid, []))
-            progressed = True
-
-        if not progressed:
-            break
-        if all(done.get(pid) or counts.get(pid, 0) >= 10 for pid in state.alive_players):
-            break
+        save_state(state)
 
     state.discussion_done = True
     save_state(state)
@@ -363,20 +386,24 @@ def start_vote() -> GameState:
     print(f"[vote] inbox_players={len(inbox_all)} inbox_messages={sum(len(v) for v in inbox_all.values())}")
 
     tally: Dict[str, int] = {}
-    for pid in day.order:
-        if pid not in state.alive_players:
-            continue
+    voters = [pid for pid in day.order if pid in state.alive_players]
+    raws = chat_all(
+        {
+            pid: (
+                models[state.players[pid].model_id],
+                build_vote_messages(
+                    state=state,
+                    player=state.players[pid],
+                    all_public_messages=all_public,
+                    inbox_all=inbox_all.get(pid, []),
+                ),
+            )
+            for pid in voters
+        }
+    )
+    for pid in voters:
         player = state.players[pid]
-        model_cfg = models[player.model_id]
-        client = LLMClient(model_cfg)
-        print(f"[vote] prompt pid={pid} model={model_cfg.model}")
-        messages = build_vote_messages(
-            state=state,
-            player=player,
-            all_public_messages=all_public,
-            inbox_all=inbox_all.get(pid, []),
-        )
-        raw = client.chat(messages)
+        raw = raws[pid]
         print(f"[vote] raw_response pid={pid} chars={len(raw)}")
         add_event(
             day,
@@ -517,19 +544,24 @@ def resolve_elimination(state: GameState, day: DayState, tally: Dict[str, int]) 
 
     models = load_model_configs(MODELS_PATH)
     revote_tally: Dict[str, int] = {}
-    for pid in day.order:
-        if pid not in state.alive_players:
-            continue
+    voters = [pid for pid in day.order if pid in state.alive_players]
+    raws = chat_all(
+        {
+            pid: (
+                models[state.players[pid].model_id],
+                build_revote_messages(
+                    state=state,
+                    player=state.players[pid],
+                    public_messages=day.public_messages,
+                    tied_candidates=tied_names,
+                ),
+            )
+            for pid in voters
+        }
+    )
+    for pid in voters:
         player = state.players[pid]
-        model_cfg = models[player.model_id]
-        client = LLMClient(model_cfg)
-        messages = build_revote_messages(
-            state=state,
-            player=player,
-            public_messages=day.public_messages,
-            tied_candidates=tied_names,
-        )
-        raw = client.chat(messages)
+        raw = raws[pid]
         add_event(
             day,
             {
